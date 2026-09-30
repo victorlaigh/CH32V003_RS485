@@ -44,7 +44,7 @@
 void    Soft_UART_Init(void);
 void    Soft_UART_SendByte(uint8_t dat);
 void    Soft_UART_SendString(char *str);
-uint8_t Soft_UART_ReadByte(uint8_t *dat);
+uint8_t Soft_UART_ReadByte(vu8 *dat);   //uint8_t 改成 vu8
 uint8_t Soft_UART_Available(void);
 
 /* 错误计数, 调试用: 全为 0 说明通信质量良好 */

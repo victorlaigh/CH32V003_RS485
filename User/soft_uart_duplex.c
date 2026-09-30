@@ -210,7 +210,7 @@ uint8_t Soft_UART_Available(void)
     return (uint8_t)(rx_head != rx_tail);
 }
 
-uint8_t Soft_UART_ReadByte(uint8_t *dat)
+uint8_t Soft_UART_ReadByte(vu8 *dat)    //uint8_t¸Ä³Évu8
 {
     if (rx_head == rx_tail) return 0;
     *dat    = rx_buf[rx_tail];
