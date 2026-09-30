@@ -6,7 +6,6 @@
 #include "main.h"
 #include <stdbool.h>
 #include "functions.h"
-#include "bms.h"
 #include "soft_uart_duplex.h"
 #include "transm.h"
 
@@ -168,30 +167,7 @@ int main(void)
     RS_485(DRE485_PORT, DRE485_PIN);  //初始化485控制脚 在transm.h设置
     RS485_SET_RX(); // DE RE設為 0 (關閉發送) PA1
 
-/* 测试通讯 ok的
-    uint8_t socc = 0;    //BMC SOC
-    struct PayloadBMSInfoResponse bms_response = {0};   //建立结构体
-    transact_bms_info(&bms_response);  //&传指标，可及时修改原件且不用复制
-    socc = bms_response.soc_percent;
-    Soft_UART_SendString("323\r\n");
-    Soft_UART_SendByte(socc);
-    int resultt = 0;
-    while(1){
-        struct PayloadBMSInfoResponse bms_response = {0};   //建立结构体
-        resultt = transact_bms_info(&bms_response);  //&传指标，可及时修改原件且不用复制
-        if ( resultt > 0){
-            socc = bms_response.soc_percent;
-            Soft_UART_SendString("623\r\n");
-            Soft_UART_SendByte(socc);
-            break;
-        }
-        else Soft_UART_SendString("13\r\n");
-        Delay_Ms(500);
-    }
-    Soft_UART_SendString("883\r\n");
-*/
-    
-/*所以再来就是转发的问题*/
+
     while(1)    //模拟串口测试
     {
         /* 收到数据就原样回显 */
@@ -227,14 +203,3 @@ int main(void)
         }   
     }
 }
-
-/*
-#if (SDI_PRINT == SDI_PR_OPEN)
-    SDI_Printf_Enable();
-#else
-    USART_Printf_Init(115200);
-#endif
-    printf("SystemClk:%d\r\n",SystemCoreClock);
-    printf( "ChipID:%08x\r\n", DBGMCU_GetCHIPID() );
-
-*/
