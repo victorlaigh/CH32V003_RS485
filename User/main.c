@@ -5,7 +5,6 @@
 #include "debug.h"
 #include "main.h"
 #include <stdbool.h>
-#include "functions.h"
 #include "soft_uart_duplex.h"
 
 //SWD跟PD1通的
@@ -22,7 +21,6 @@
 
 #define RS485_SET_TX()    GPIO_WriteBit(DRE485_PORT, DRE485_PIN, Bit_SET)   // DE RE設為 1 (開啟發送) PA1
 #define RS485_SET_RX()    GPIO_WriteBit(DRE485_PORT, DRE485_PIN, Bit_RESET) // 低电平: 接收
-
 
 
 /* Global Variable */
@@ -87,4 +85,48 @@ int main(void)
             Soft_UART_SendByte(val);        //发到软件urt            /* 入队即返回, 不阻塞 */
         }   
     }
+}
+
+
+
+
+void USART_1(GPIO_TypeDef * u_port, uint16_t tx_pin, uint16_t rx_pin){
+    GPIO_InitTypeDef  GPIO_InitStructure = {0};
+    USART_InitTypeDef USART_InitStructure = {0};
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD | 
+                           RCC_APB2Periph_AFIO  | // AFIO 時鐘remap需要，复位PA1 2也要
+                           RCC_APB2Periph_USART1, ENABLE);
+
+    AFIO->PCFR1 &= ~AFIO_PCFR1_PA12_REMAP;  //將 AFIO_PCFR1 暫存器的 PA12_RM 位元清零 (断开晶振切回 GPIO 模式)
+
+    /* USART1 TX-->D.5   RX-->D.6 */
+    GPIO_InitStructure.GPIO_Pin = tx_pin;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_10MHz;   //30改成10
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP; //复用推挽输出
+    GPIO_Init(u_port, &GPIO_InitStructure);  //初始化 tx
+    GPIO_InitStructure.GPIO_Pin = rx_pin;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;   //浮空输入
+    GPIO_Init(u_port, &GPIO_InitStructure);  //初始化 rx
+
+    USART_InitStructure.USART_BaudRate = 9600;  //低一点相容性好点
+    USART_InitStructure.USART_WordLength = USART_WordLength_9b; //8b+校验位=9b
+    USART_InitStructure.USART_StopBits = USART_StopBits_1;
+    USART_InitStructure.USART_Parity = USART_Parity_Even;   //even校验
+    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
+    USART_Init(USART1, &USART_InitStructure);   //初始化UASRT
+
+    USART_Cmd(USART1, ENABLE);  //使能串口1
+}
+
+void RS_485(GPIO_TypeDef * u_port, uint16_t dre_pin){
+    GPIO_InitTypeDef  GPIO_InitStructure = {0};
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+                           
+    GPIO_InitStructure.GPIO_Pin = dre_pin;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;   //也不用多块
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; //推挽输出
+    GPIO_Init(u_port, &GPIO_InitStructure);  //初始化 de re
 }
